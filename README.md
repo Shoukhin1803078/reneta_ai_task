@@ -1,32 +1,11 @@
-# Output Sample Question:
-<img width="1710" height="886" alt="Screenshot 2026-08-13 at 10 20 23 PM" src="https://github.com/user-attachments/assets/b5315a3d-dc2b-487b-84f4-929adb3fac95" />
-<img width="1702" height="1071" alt="Screenshot 2026-08-13 at 10 21 11 PM" src="https://github.com/user-attachments/assets/f746ead5-ad95-4b53-9a15-bee2c7fb5c3f" />
-<img width="1592" height="978" alt="Screenshot 2026-08-13 at 10 21 41 PM" src="https://github.com/user-attachments/assets/45dd5bb9-7647-4209-9d82-c1af66bbfea7" />
-## Outside  Context 
-<img width="1378" height="767" alt="Screenshot 2026-08-13 at 10 23 40 PM" src="https://github.com/user-attachments/assets/962ff0a2-ae4a-4cac-9d6d-1d2a26256f9c" />
-<img width="1249" height="638" alt="Screenshot 2026-08-13 at 10 27 21 PM" src="https://github.com/user-attachments/assets/703654f7-4e8b-4040-b5ad-6e0d88670302" />
-<img width="1427" height="626" alt="Screenshot 2026-08-13 at 10 27 43 PM" src="https://github.com/user-attachments/assets/3f526f8e-272d-460b-9012-b513c732b998" />
+
 
 # Renata Medicine Leaflet Assistant
 
-A small RAG service that answers staff questions about Renata PLC product
+A RAG system that answers staff questions about Renata PLC product
 inserts / medicine leaflets, grounded strictly in the provided PDFs, with
-citations, and honest when the answer isn't in the documents.
+citations and honest when the answer isn't in the documents.
 
-## What's inside
-
-All service code lives in the `app/` package:
-
-- `app/ingest.py` — parse PDFs -> chunk by section -> embed -> store in ChromaDB
-- `app/retriever.py` — hybrid retrieval (semantic + BM25) and candidate merging
-- `app/reranker.py` — lazy cross-encoder reranker model + `rerank_documents`
-- `app/utils.py` — small shared helpers, e.g. `create_context`
-- `app/service.py` — shared helpers: vectorstore loading, BM25 corpus, LLM, grounded answer generation
-- `app/rag_pipeline.py` — the query flow as a LangGraph state graph (retrieve, rerank, context, generate, citations)
-- `app/schemas/` — Pydantic request/response models (`AskRequest`, `Citation`, `AskResponse`)
-- `app/main.py` — FastAPI service exposing `POST /ask` and the chat UI
-- `static/index.html` — minimal single-page chat interface
-- `docs/` — the medicine leaflets (5 PDFs)
 
 ## Project structure
 
@@ -61,17 +40,24 @@ All service code lives in the `app/` package:
 └── sample_evaluation_set.txt  # sample evaluation Q&A pairs
 ```
 
-## Models used
+## What's inside
 
-| Component | Model | Notes |
-| --- | --- | --- |
-| Embeddings | `sentence-transformers/all-MiniLM-L6-v2` | Small, runs on CPU |
-| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Cross-encoder, runs on CPU |
-| LLM | `llama3.2:3b` via Ollama | Local, ~2 GB, no API key |
+All service code lives in the `app/` package:
 
-## Install and run (under 5 minutes)
+- `app/ingest.py` — parse PDFs then chunk by section .Embedding  store in ChromaDB
+- `app/retriever.py` — hybrid retrieval (semantic + BM25) and candidate merging
+- `app/reranker.py` — lazy cross-encoder reranker model + `rerank_documents`
+- `app/utils.py` — small shared helpers, e.g. `create_context`
+- `app/service.py` — shared helpers: vectorstore loading, BM25 corpus, LLM, grounded answer generation
+- `app/rag_pipeline.py` — the query flow as a LangGraph state graph (retrieve, rerank, context, generate, citations)
+- `app/schemas/` — Pydantic request/response models (`AskRequest`, `Citation`, `AskResponse`)
+- `app/main.py` — FastAPI service exposing `POST /ask` and the chat UI
+- `static/index.html` — minimal single-page chat interface
+- `docs/` — the medicine leaflets (5 PDFs)
 
-Prerequisites: Python 3.10+, and [Ollama](https://ollama.com) with the model pulled.
+## Install and run 
+
+Prerequisites: Python 3.10+ Recommended : 3.12, and [Ollama](https://ollama.com) with the model pulled.
 
 ```bash
 # 1. Environment
@@ -95,6 +81,14 @@ uvicorn app.main:app --reload
 open http://localhost:8000          # Windows: start http://localhost:8000
 ```
 
+
+## Models I used
+
+- Embeddings : `sentence-transformers/all-MiniLM-L6-v2`  Reason: Small, runs on CPU 
+- Reranker : `cross-encoder/ms-marco-MiniLM-L-6-v2` Reason: Cross-encoder, runs on CPU 
+- LLM : `llama3.2:3b` via Ollama Reason: Local, ~2 GB, no API key needed for inferencing.
+
+
 You can also call the API directly:
 
 ```bash
@@ -114,7 +108,7 @@ Response:
 }
 ```
 
-## Run with Docker (optional)
+## Run with Docker 
 
 Requires Docker (and Docker Compose). The compose file runs an
 [Ollama](https://ollama.com) container for the LLM plus the app container.
@@ -143,6 +137,19 @@ Notes:
   (the entrypoint rebuilds it on each start regardless).
 - Ollama's models live in the `ollama_data` Docker volume; the embedding and
   reranker models are cached in the app container's Hugging Face cache.
+
+
+# Sample Output (UI)  :
+<img width="1710" height="784" alt="Screenshot 2026-08-13 at 10 31 04 PM" src="https://github.com/user-attachments/assets/202c3af8-e192-4590-b284-6c90cbb165b8" />
+<img width="1702" height="949" alt="Screenshot 2026-08-13 at 10 30 28 PM" src="https://github.com/user-attachments/assets/7a77a4d6-2bbd-48ff-848d-c32ebd6692fd" />
+# Sample Output (Swagger UI)  :
+<img width="1710" height="886" alt="Screenshot 2026-08-13 at 10 20 23 PM" src="https://github.com/user-attachments/assets/b5315a3d-dc2b-487b-84f4-929adb3fac95" />
+<img width="1702" height="1071" alt="Screenshot 2026-08-13 at 10 21 11 PM" src="https://github.com/user-attachments/assets/f746ead5-ad95-4b53-9a15-bee2c7fb5c3f" />
+<img width="1592" height="978" alt="Screenshot 2026-08-13 at 10 21 41 PM" src="https://github.com/user-attachments/assets/45dd5bb9-7647-4209-9d82-c1af66bbfea7" />
+## Outside  Context 
+<img width="1378" height="767" alt="Screenshot 2026-08-13 at 10 23 40 PM" src="https://github.com/user-attachments/assets/962ff0a2-ae4a-4cac-9d6d-1d2a26256f9c" />
+<img width="1249" height="638" alt="Screenshot 2026-08-13 at 10 27 21 PM" src="https://github.com/user-attachments/assets/703654f7-4e8b-4040-b5ad-6e0d88670302" />
+<img width="1427" height="626" alt="Screenshot 2026-08-13 at 10 27 43 PM" src="https://github.com/user-attachments/assets/3f526f8e-272d-460b-9012-b513c732b998" />
 
 ## Assumptions
 
