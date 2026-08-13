@@ -34,9 +34,8 @@ citations and honest when the answer isn't in the documents.
 ├── .gitignore
 ├── README.md
 ├── DESIGN.md
-├── Final_experiment.ipynb     # original notebook experiments
-├── experiment2.ipynb          # notebook experiments
-├── chunks.txt                 # sample chunking output
+├── Final_experiment.ipynb     # original notebook experiments this is workable 
+├── experiment2.ipynb          # my notebook experiments
 └── sample_evaluation_set.txt  # sample evaluation Q&A pairs
 ```
 
