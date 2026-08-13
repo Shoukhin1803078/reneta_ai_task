@@ -56,16 +56,19 @@ def build_llm():
 
 
 def generate_answer(llm, query, context, reranked_results=None):
-    # Honesty gate: refuse when the top retrieved chunk is not confidently
-    # relevant. This is more reliable for a small local model than asking the
-    # LLM to judge "does the context answer it" — the 3b model tends to
-    # over-think and refuse even when the right chunk was retrieved.
-    if reranked_results:
-        top_document, top_score = reranked_results[0]
-        top_confidence = 1 / (1 + math.exp(-top_score))
+    # Honesty gate: refuse when there are no retrieved chunks, or when the
+    # top chunk is not confidently relevant. This is more reliable for a small
+    # local model than asking the LLM to judge "does the context answer it" —
+    # the 3b model tends to over-think and refuse even when the right chunk
+    # was retrieved.
+    if not reranked_results:
+        return NOT_IN_DOCS_PHRASE
 
-        if top_confidence < MIN_CONFIDENCE_THRESHOLD:
-            return NOT_IN_DOCS_PHRASE
+    top_document, top_score = reranked_results[0]
+    top_confidence = 1 / (1 + math.exp(-top_score))
+
+    if top_confidence < MIN_CONFIDENCE_THRESHOLD:
+        return NOT_IN_DOCS_PHRASE
 
     prompt = f"""
     Answer the question using only the provided context.
