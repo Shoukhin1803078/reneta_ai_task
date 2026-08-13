@@ -148,6 +148,7 @@ The current codebase uses **top_k = 3** for the final retrieval/reranking stage.
 
 - Cache the loaded models/vectorstore across requests instead of reloading
   per request.
+- Metadata filtering and Indexing. Theres a way in my mind to improve the accuracy using metadata filtering also.
 - Tune the confidence threshold against a larger evaluation set; consider a
   per-section or per-question-type threshold.
 
