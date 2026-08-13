@@ -79,7 +79,7 @@ python -m app.ingest
 
 # 5. Run the service
 uvicorn app.main:app --reload
-# or: python -m app.main
+
 
 # 6. Open the chat UI
 open http://localhost:8000          # Windows: start http://localhost:8000
