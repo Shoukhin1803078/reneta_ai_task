@@ -1,3 +1,12 @@
+# Output Sample Question:
+<img width="1710" height="886" alt="Screenshot 2026-08-13 at 10 20 23 PM" src="https://github.com/user-attachments/assets/b5315a3d-dc2b-487b-84f4-929adb3fac95" />
+<img width="1702" height="1071" alt="Screenshot 2026-08-13 at 10 21 11 PM" src="https://github.com/user-attachments/assets/f746ead5-ad95-4b53-9a15-bee2c7fb5c3f" />
+<img width="1592" height="978" alt="Screenshot 2026-08-13 at 10 21 41 PM" src="https://github.com/user-attachments/assets/45dd5bb9-7647-4209-9d82-c1af66bbfea7" />
+## Outside  Context 
+<img width="1378" height="767" alt="Screenshot 2026-08-13 at 10 23 40 PM" src="https://github.com/user-attachments/assets/962ff0a2-ae4a-4cac-9d6d-1d2a26256f9c" />
+<img width="1249" height="638" alt="Screenshot 2026-08-13 at 10 27 21 PM" src="https://github.com/user-attachments/assets/703654f7-4e8b-4040-b5ad-6e0d88670302" />
+<img width="1427" height="626" alt="Screenshot 2026-08-13 at 10 27 43 PM" src="https://github.com/user-attachments/assets/3f526f8e-272d-460b-9012-b513c732b998" />
+
 # Renata Medicine Leaflet Assistant
 
 A small RAG service that answers staff questions about Renata PLC product
