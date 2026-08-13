@@ -197,5 +197,3 @@ Notes:
   retrieved chunk's reranker confidence is below `0.5`, the service returns
   the exact answer `I don't have that information in the provided documents`
   with an empty `citations` list.
-- An evaluation set lives in `evaluation_set.json`; run
-  `python -m app.evaluate` to score retrieval and answer quality.
