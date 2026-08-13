@@ -79,6 +79,7 @@ uvicorn app.main:app --reload
 
 # 6. Open the chat UI
 open http://localhost:8000          # Windows: start http://localhost:8000
+or http://localhost:8000/docs       # Swagger UI
 ```
 
 
@@ -89,24 +90,60 @@ open http://localhost:8000          # Windows: start http://localhost:8000
 - LLM : `llama3.2:3b` via Ollama Reason: Local, ~2 GB, no API key needed for inferencing.
 
 
+# Endpoint Test
+
 You can also call the API directly:
 
+
+
+### In Chat UI 
+You can go to this urls <http://localhost:8000>
+
+<img width="1490" height="817" alt="Screenshot 2026-08-13 at 10 49 45 PM" src="https://github.com/user-attachments/assets/6c331140-e3df-4bea-8d45-29e3e751ccbb" />
+
+
+---
+
+### In swagger UI :
+```
+{
+  "question": "My age is bellow 5 years . Should i take doxicap?"
+}
+```
+---
+
+### Using curl 
 ```bash
 curl -X POST http://localhost:8000/ask \
   -H "Content-Type: application/json" \
   -d '{"question": "I am 5 years old. Can I take Doxicap?"}'
 ```
+---
 
-Response:
-
+### Response:
 ```json
 {
-  "answer": "No, you should not take Doxicap if you are a child under 8 years of age.",
+  "answer": "No, you should not take Doxicap. According to the context, \"are a child under 8 years of age\" is one of the conditions where you should not take Doxicap. Since your age is below 5 years, it falls under this category and you should not take Doxicap.",
   "citations": [
-    { "source": "doxicap_100mg_doxycycline_leaflet.pdf", "section": "Before you take", "score": 0.82 }
+    {
+      "source": "doxicap_100mg_doxycycline_leaflet.pdf",
+      "section": "Before you take Doxicap",
+      "score": 0.731
+    },
+    {
+      "source": "doxicap_100mg_doxycycline_leaflet.pdf",
+      "section": "How to take Doxicap",
+      "score": 0.004
+    },
+    {
+      "source": "doxicap_100mg_doxycycline_leaflet.pdf",
+      "section": "Possible side effects",
+      "score": 0.002
+    }
   ]
 }
 ```
+
 
 ## Run with Docker 
 
