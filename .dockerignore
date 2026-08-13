@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+venv/
+.git/
+.commandcode/
+.DS_Store
+.ipynb_checkpoints/
+final.ipynb
+*.md
+*.zip

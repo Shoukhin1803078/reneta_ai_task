@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Renata Medicine Leaflet Assistant</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.25rem; }
+    form { display: flex; gap: 0.5rem; }
+    input[type="text"] { flex: 1; padding: 0.5rem; }
+    button { padding: 0.5rem 1rem; }
+    #answer { margin-top: 1.5rem; white-space: pre-wrap; }
+    #citations { margin-top: 1rem; font-size: 0.85rem; color: #444; }
+    #citations div { margin-top: 0.25rem; }
+    #error { margin-top: 1rem; color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Renata Medicine Leaflet Assistant</h1>
+  <form id="ask-form">
+    <input type="text" id="question" placeholder="Ask about a medicine leaflet..." autocomplete="off" required>
+    <button type="submit">Ask</button>
+  </form>
+  <div id="error"></div>
+  <div id="answer"></div>
+  <div id="citations"></div>
+
+  <script>
+    const form = document.getElementById("ask-form");
+    const question = document.getElementById("question");
+    const error = document.getElementById("error");
+    const answer = document.getElementById("answer");
+    const citations = document.getElementById("citations");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      error.textContent = "";
+      answer.textContent = "Thinking...";
+      citations.textContent = "";
+
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: question.value }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Request failed: " + response.status);
+        }
+
+        const data = await response.json();
+
+        answer.textContent = data.answer;
+
+        if (data.citations && data.citations.length > 0) {
+          citations.innerHTML = "<strong>Citations:</strong>";
+          for (const citation of data.citations) {
+            const div = document.createElement("div");
+            div.textContent =
+              citation.source + " — " + citation.section + " (score: " + citation.score + ")";
+            citations.appendChild(div);
+          }
+        }
+      } catch (err) {
+        error.textContent = err.message;
+        answer.textContent = "";
+      }
+    });
+  </script>
+</body>
+</html>
