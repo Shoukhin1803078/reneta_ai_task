@@ -74,7 +74,7 @@ ollama pull llama3.2:3b
 
 # 3. Put the medicine leaflets (the 5 PDFs) in ./docs/
 
-# 4. Build the vector database (once)
+# 4. Build the vector database (once) and ingest corresponding chunks embedding to vector db
 python -m app.ingest
 
 # 5. Run the service
