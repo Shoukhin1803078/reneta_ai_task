@@ -1,96 +1,126 @@
 # Design
 
-## The plan at a glance
+## My Design Overview 
 
-The idea is simple: turn the five medicine leaflets into a searchable index,
-then answer questions by pulling the most relevant chunks and letting the LLM
-read only those.
+My idea is to turn the five medicine leaflets into a searchable index. When a user asks a question, I retrieve the most relevant chunks using both semantic search and BM25, reranks them and then give only the best chunks to the LLM .
+
+<img width="751" height="857" alt="Screenshot 2026-08-13 at 11 55 46 PM" src="https://github.com/user-attachments/assets/bcc8c47c-dcae-4030-b8e8-6a858a424a9c" />
+
+
+I implemented the query flow as a LangGraph state graph in app/rag_pipeline.py. I keep each stage separate—retrieve, rerank, build context, generate and format citations—so I can easily understand and modify each part.
+
+### Main Components
+
+- **Ingest (`app/ingest.py`)**: Parse PDFs → section-based chunking → metadata → embeddings → ChromaDB.
+- **Retrieve (`app/retriever.py`)**: Perform semantic and BM25 search, then merge and deduplicate the candidates.
+- **Rerank (`app/reranker.py`)**: Score the retrieved candidates using a cross-encoder and select the top-k chunks.
+- **Generate (`app/service.py` + `app/rag_pipeline.py`)**: Build the context from the top chunks and generate an answer using only that context.
+- **UI**: I build a simple static HTML page sends questions to `/ask` and displays the answer and citations.
+
 
 ```
+Query → Semantic + BM25 → Hybrid Search → Rerank → Context → LLM → Answer
+
 docs/*.pdf
    │  ingest.py
    ▼
 chunk by section ──► embed (all-MiniLM-L6-v2) ──► ChromaDB (./chroma_db)
                                                        │
                                                        ▼
-POST /ask ──► semantic search (top-3) ──┐
-            │                           ├─► hybrid candidates ──► rerank (cross-encoder) ──► top-3 ──► context ──► LLM ──► {answer, citations}
-            └► BM25 keyword search (top-3)┘
+POST /ask ──► semantic search (top-3)  ── ──┐
+            │                               ├─► hybrid candidates ──► rerank (cross-encoder) ──► top-3 ──► context ──► LLM ──► {answer, citations}
+            └► BM25 keyword search (top-3)──┘
 ```
 
-The query flow is wired up as a LangGraph state graph in
-`app/rag_pipeline.py` — each stage (retrieve, rerank, build context, generate,
-format citations) is its own node, which keeps the pipeline easy to follow and
-tweak.
 
-- **Ingest** (`app/ingest.py`): parse -> section-based chunking -> metadata -> embeddings -> ChromaDB.
-- **Retrieve** (`app/retriever.py`): semantic + BM25 candidates merged and deduplicated.
-- **Rerank** (`app/reranker.py`): candidates scored by a cross-encoder, top-k kept.
-- **Generate** (`app/service.py` + `app/rag_pipeline.py`): top chunks become the context; the LLM answers using only that context.
-- **UI**: single static HTML page posting to `/ask`, rendering answer + citations.
 
 ## Chunking strategy and why
 
-The leaflets all follow the same fixed structure — "What X is and what it is
-used for", "Before you take", "How to take", "Possible side effects", "Use in
-pregnancy and breast-feeding", "How to store". So instead of blindly chopping
-text into equal-size pieces, I split on those section headings first. Each
-chunk stays within one topical section. Only the long sections then get
-further split with `RecursiveCharacterTextSplitter` (size 1000, overlap 100).
+### My Chunking Strategy
 
+The medicine leaflets follow a common structure, such as:
+
+- What X is and what it is used for
+- Before you take
+- How to take
+- Possible side effects
+- Use in pregnancy and breast-feeding
+- How to store
+
+I decided not to split everything into fixed-size chunks with overlap from the beginning. Instead, I first split the content based on these section headings. If a section is too long, I split it further using `RecursiveCharacterTextSplitter` with a chunk size of 1000 and an overlap of 100.
+ 
+##### Reason for choosing this chunking strategy:
+I chose this `section based chunking` approach because I want each chunk to stay focused on one topic. It also allows me to keep the section name in the metadata, which I later use when generating citations.
 Why this matters: it gives chunks small enough for good embedding recall,
 and — more importantly for the citations — it keeps the section name intact
 as metadata. That section name is exactly what I surface in the `/ask`
 response, so every citation points back to a real heading in a real leaflet.
 
+
 ## Grounding and honesty
 
-The core design goal: the model should only ever answer from the leaflet
-content. Nothing else gets into the prompt. Three things enforce that:
+The core design goal: the model should make sure the LLM answers only from the medicine leaflets.
 
-**1. Retrieval-limited context.** The LLM prompt contains only the top-k
+### 1. Confidence-Based Refusal
+
+##### Current way:
+Before generating an answer, the system checks the confidence of the top reranked result. The cross-encoder score is converted to a 0–1 confidence using a sigmoid function. If the confidence is below : 
+```
+MIN_CONFIDENCE_THRESHOLD = 0.5
+```
+then the system refuses to answer and returns this answer with emty citation.
+> I don't have that information in the provided documents
+
+Initially, I tried using the LLM itself as a confidence gate by asking the model a yes/no , whether the context contained enough information to answer the question. But the local 3B model sometimes refused questions even when the correct chunk had a strong retrieval score. 
+So I decided to use the retrieval score instead.
+
+
+**2. Retrieval-limited context.** The LLM prompt contains only the top-k
 reranked chunks from the vector database. There's no general-knowledge
 injection, and the prompt tells the model to use only the provided context.
 
-**2. A confidence-based honesty gate.** Before generating an answer, the
-service checks the reranker confidence of the top retrieved chunk. The
-reranker logit is mapped to a 0–1 confidence via sigmoid, and if that
-confidence is below a threshold (`MIN_CONFIDENCE_THRESHOLD = 0.5`), the
-service refuses with the exact phrase:
+The basic idea is:
 
-> I don't have that information in the provided documents
+```
+User Question
+     ↓
+Retrieve relevant chunks
+     ↓
+Rerank
+     ↓
+Top-K chunks
+     ↓
+LLM
+```
+**3.Citations from the actual retrieval.** 
+Citations are generated directly from the retrieved document metadata.
+Each citation contains:
 
-I tried an LLM-judged gate first — asking the model a yes/no "does the
-context answer this?" question — but the small local model (3b) over-thought:
-it refused even when the correct chunk was retrieved with 0.98 confidence,
-reasoning about edge cases the question didn't ask about. The retrieval
-scores are more reliable and deterministic than a small model's judgment, so
-the gate now keys off the actual retrieval confidence. This also saves an
-LLM call per request.
+- `source` — the original leaflet filename
+- `section` — the leaflet section
+- `score` — the reranker confidence
 
-**3. Citations from the actual retrieval.** Every citation is built from the
-real retrieved chunks — `source` (filename) and `section` (leaflet heading)
-come straight from chunk metadata, and `score` is the reranker logit mapped
-to 0–1 confidence via sigmoid. So an answer can always be traced back to a
-specific document and section.
+This keeps every citation traceable to an actual document and section.
 
-**What the API returns on refusal.** When the gate says the context doesn't
-cover the question, the response is:
+### Refusal Response
 
-```json
+When the confidence threshold is not met:
+
+```
 {
-  "answer": "I don't have that information in the provided documents",
+  "answer":"I don't have that information in the provided documents",
   "citations": []
 }
 ```
 
-`citations` is deliberately empty — the service should never claim a source
-for a non-answer.
+The citation list is intentionally empty because the system should not provide sources when it cannot confidently answer the question.
 
-**Known trade-off.** A single threshold is a blunt instrument: set it too
-high and real answers get refused; too low and some wrong-context answers
-slip through. I calibrated it to the observed reranker scores, but it's worth
-tuning against a larger evaluation set.
+### Known Trade-off
+
+A single confidence threshold is not perfect. A threshold that is too high may reject valid answers, while a threshold that is too low may allow irrelevant context through.
+The current threshold was selected based on observed reranker scores but should be further tuned using a larger evaluation dataset.
+
+
 
 ## Model choices and trade-offs
 
@@ -102,9 +132,8 @@ tuning against a larger evaluation set.
 
 ## What I would improve with more time
 
-- Tune the confidence threshold against a larger evaluation set; consider a
-  per-section or per-question-type threshold.
-- Expand the evaluation set (currently 6 question -> expected-answer pairs in
-  `evaluation_set.json`, scored by `python -m app.evaluate`).
 - Cache the loaded models/vectorstore across requests instead of reloading
   per request.
+- Tune the confidence threshold against a larger evaluation set; consider a
+  per-section or per-question-type threshold.
+
