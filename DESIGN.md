@@ -63,8 +63,8 @@ then the system refuses to answer and returns this answer with emty citation.
 Initially, I tried using the LLM itself as a confidence gate by asking the model a yes/no , whether the context contained enough information to answer the question. But the local 3B model sometimes refused questions even when the correct chunk had a strong retrieval score. 
 So I decided to use the retrieval score instead.
 
-
-**2. Retrieval-limited context.** The LLM prompt contains only the top-k
+### 2.  Retrieval-limited context
+The LLM prompt contains only the top-k
 reranked chunks from the vector database. There's no general-knowledge
 injection, and the prompt tells the model to use only the provided context.
 
@@ -81,7 +81,8 @@ Top-K chunks
      ↓
 LLM
 ```
-**3.Citations from the actual retrieval.** 
+
+### 3. Citations from the actual retrieval.
 Citations are generated directly from the retrieved document metadata.
 Each citation contains:
 
