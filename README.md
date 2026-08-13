@@ -83,8 +83,8 @@ or http://localhost:8000/docs       # Swagger UI
 ```
 
 
-## Models I used
-
+## Tech Stack and Models I used
+- Langgraph : orchestration 
 - Embeddings : `sentence-transformers/all-MiniLM-L6-v2`  Reason: Small, runs on CPU 
 - Reranker : `cross-encoder/ms-marco-MiniLM-L-6-v2` Reason: Cross-encoder, runs on CPU 
 - LLM : `llama3.2:3b` via Ollama Reason: Local, ~2 GB, no API key needed for inferencing.
