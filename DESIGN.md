@@ -17,19 +17,8 @@ I implemented the query flow as a LangGraph state graph in app/rag_pipeline.py. 
 - **Generate (`app/service.py` + `app/rag_pipeline.py`)**: Build the context from the top chunks and generate an answer using only that context.
 - **UI**: I build a simple static HTML page sends questions to `/ask` and displays the answer and citations.
 
-
 ```
 Query → Semantic + BM25 → Hybrid Search → Rerank → Context → LLM → Answer
-
-docs/*.pdf
-   │  ingest.py
-   ▼
-chunk by section ──► embed (all-MiniLM-L6-v2) ──► ChromaDB (./chroma_db)
-                                                       │
-                                                       ▼
-POST /ask ──► semantic search (top-3)  ── ──┐
-            │                               ├─► hybrid candidates ──► rerank (cross-encoder) ──► top-3 ──► context ──► LLM ──► {answer, citations}
-            └► BM25 keyword search (top-3)──┘
 ```
 
 
