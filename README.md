@@ -2,7 +2,7 @@
 
 # Renata Medicine Leaflet Assistant
 
-A RAG system that answers staff questions about Renata PLC product
+I build a RAG system that answers staff questions about Renata PLC product
 inserts / medicine leaflets, grounded strictly in the provided PDFs, with
 citations and honest when the answer isn't in the documents.
 
@@ -54,6 +54,11 @@ All service code lives in the `app/` package:
 - `app/main.py` — FastAPI service exposing `POST /ask` and the chat UI
 - `static/index.html` — minimal single-page chat interface
 - `docs/` — the medicine leaflets (5 PDFs)
+
+## Current Configuration
+
+The current codebase uses **top_k = 3** for the final retrieval/reranking stage. So the system passes the top 3 most relevant chunks to the LLM for answer generation.
+
 
 ## Install and run 
 

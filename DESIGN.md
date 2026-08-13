@@ -121,6 +121,10 @@ The current threshold was selected based on observed reranker scores but should 
 - FastAPI — API
 - HTML/CSS/JavaScript — Simple UI
 
+## Current Configuration
+
+The current codebase uses **top_k = 3** for the final retrieval/reranking stage. So the system passes the top 3 most relevant chunks to the LLM for answer generation.
+
 ## Model choices and trade-offs
 
 | Model | Why I picked it | Trade-off |
