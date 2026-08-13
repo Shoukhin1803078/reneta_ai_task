@@ -18,7 +18,7 @@ I implemented the query flow as a LangGraph state graph in app/rag_pipeline.py. 
 - **UI**: I build a simple static HTML page sends questions to `/ask` and displays the answer and citations.
 
 ```
-Query → Semantic + BM25 → Hybrid Search → Rerank → Context → LLM → Answer
+Query → Semantic + BM25 → Hybrid Search → Rerank → Confidence score checking → Context → LLM → Answer
 ```
 
 ## Chunking strategy and why
