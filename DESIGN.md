@@ -4,7 +4,7 @@
 
 My idea is to turn the five medicine leaflets into a searchable index. When a user asks a question, I retrieve the most relevant chunks using both semantic search and BM25, reranks them and then give only the best chunks to the LLM .
 ### Pipelines
-<img width="751" height="857" alt="Screenshot 2026-08-13 at 11 55 46 PM" src="https://github.com/user-attachments/assets/bcc8c47c-dcae-4030-b8e8-6a858a424a9c" />
+<img width="848" height="885" alt="Screenshot 2026-08-14 at 1 41 55 AM" src="https://github.com/user-attachments/assets/e37ccd98-5e2d-4953-bd61-fe651ea7dd52" />
 
 
 I implemented the query flow as a LangGraph state graph in app/rag_pipeline.py. I keep each stage separate—retrieve, rerank, build context, generate and format citations—so I can easily understand and modify each part.
