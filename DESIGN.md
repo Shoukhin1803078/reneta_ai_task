@@ -3,7 +3,7 @@
 ## My Design Overview 
 
 My idea is to turn the five medicine leaflets into a searchable index. When a user asks a question, I retrieve the most relevant chunks using both semantic search and BM25, reranks them and then give only the best chunks to the LLM .
-
+### Pipelines
 <img width="751" height="857" alt="Screenshot 2026-08-13 at 11 55 46 PM" src="https://github.com/user-attachments/assets/bcc8c47c-dcae-4030-b8e8-6a858a424a9c" />
 
 
@@ -20,8 +20,6 @@ I implemented the query flow as a LangGraph state graph in app/rag_pipeline.py. 
 ```
 Query → Semantic + BM25 → Hybrid Search → Rerank → Context → LLM → Answer
 ```
-
-
 
 ## Chunking strategy and why
 
@@ -111,6 +109,17 @@ A single confidence threshold is not perfect. A threshold that is too high may r
 The current threshold was selected based on observed reranker scores but should be further tuned using a larger evaluation dataset.
 
 
+## Tech Stack
+- Python — Core development
+- LangChain — RAG and retrieval components
+- LangGraph — RAG workflow
+- ChromaDB — Vector database
+- HuggingFace all-MiniLM-L6-v2 — Embeddings
+- BM25 — Keyword search
+- Cross-Encoder ms-marco-MiniLM-L-6-v2 — Reranking
+- Ollama + Llama 3.2 3B — Local LLM
+- FastAPI — API
+- HTML/CSS/JavaScript — Simple UI
 
 ## Model choices and trade-offs
 
@@ -119,6 +128,7 @@ The current threshold was selected based on observed reranker scores but should 
 | `all-MiniLM-L6-v2` embeddings | Small, fast on CPU, plenty for this corpus | Less nuanced than larger embedding models |
 | `cross-encoder/ms-marco-MiniLM-L-6-v2` reranker | Strong relevance signal; hybrid retrieval really benefits from reranking | Extra compute per request; loaded lazily |
 | `llama3.2:3b` via Ollama | Free, local, ~2 GB, fits modest hardware | Smaller model, weaker than 7b/8b but fine for grounded Q&A |
+
 
 ## What I would improve with more time
 
