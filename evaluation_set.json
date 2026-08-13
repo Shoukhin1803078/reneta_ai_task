@@ -1,0 +1,44 @@
+[
+  {
+    "question": "what is the usages of fenadin?",
+    "expected_source": "fenadin_120mg_fexofenadine_leaflet.pdf",
+    "expected_section": "What Fenadin is and what it is used for",
+    "expected_answer_contains": "allergic rhinitis"
+  },
+  {
+    "question": "What is maxpro?",
+    "expected_source": "maxpro_20mg_esomeprazole_leaflet.pdf",
+    "expected_section": "What Maxpro is and what it is used for",
+    "expected_answer_contains": "esomeprazole"
+  },
+  {
+    "question": "My age is bellow 5years . Should i take doxicap?",
+    "expected_source": "doxicap_100mg_doxycycline_leaflet.pdf",
+    "expected_section": "Before you take Doxicap",
+    "expected_answer_contains": "under 8 years"
+  },
+  {
+    "question": "Can I take Maxpro while pregnant?",
+    "expected_source": "maxpro_20mg_esomeprazole_leaflet.pdf",
+    "expected_section": "Use in pregnancy and breast-feeding",
+    "expected_answer_contains": "not recommended"
+  },
+  {
+    "question": "How should I store Rolip?",
+    "expected_source": "rolip_10mg_rosuvastatin_leaflet.pdf",
+    "expected_section": "How to store",
+    "expected_answer_contains": "30"
+  },
+  {
+    "question": "What are the possible side effects of Ketorolac?",
+    "expected_source": "rolac_10mg_ketorolac_leaflet.pdf",
+    "expected_section": "Possible side effects",
+    "expected_answer_contains": "side effects"
+  },
+  {
+    "question": "what is the capital of Bangladesh",
+    "expected_source": null,
+    "expected_section": null,
+    "expected_answer_contains": "I don't have that information"
+  }
+]

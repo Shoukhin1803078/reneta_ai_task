@@ -5,68 +5,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Renata Medicine Leaflet Assistant</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
-    h1 { font-size: 1.25rem; }
-    form { display: flex; gap: 0.5rem; }
-    input[type="text"] { flex: 1; padding: 0.5rem; }
-    button { padding: 0.5rem 1rem; }
-    #answer { margin-top: 1.5rem; white-space: pre-wrap; }
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.4rem; }
+    textarea { width: 100%; height: 80px; padding: 0.5rem; box-sizing: border-box; }
+    button { margin-top: 0.5rem; padding: 0.5rem 1.2rem; cursor: pointer; }
+    #answer { margin-top: 1.5rem; white-space: pre-wrap; background: #f6f6f6; padding: 1rem; border-radius: 6px; }
     #citations { margin-top: 1rem; font-size: 0.85rem; color: #444; }
     #citations div { margin-top: 0.25rem; }
     #error { margin-top: 1rem; color: #b00020; }
+    .answer-heading { color: #1a73e8; font-weight: bold; margin-bottom: 0.25rem; }
+    .citations-heading { color: #1a73e8; font-weight: bold; margin-bottom: 0.25rem; }
   </style>
 </head>
 <body>
   <h1>Renata Medicine Leaflet Assistant</h1>
-  <form id="ask-form">
-    <input type="text" id="question" placeholder="Ask about a medicine leaflet..." autocomplete="off" required>
-    <button type="submit">Ask</button>
-  </form>
+  <p>Ask a question about the product leaflets. Answers are grounded strictly in the documents.</p>
+
+  <textarea id="question" placeholder="e.g. How should I take Maxpro 20 mg?"></textarea>
+  <br />
+  <button id="askBtn">Ask</button>
+
   <div id="error"></div>
+  <div class="answer-heading" id="answer-heading" hidden>Answer</div>
   <div id="answer"></div>
+  <br />
+  <div class="citations-heading" id="citations-heading" hidden>Citations</div>
   <div id="citations"></div>
 
   <script>
-    const form = document.getElementById("ask-form");
-    const question = document.getElementById("question");
+    const btn = document.getElementById("askBtn");
+    const qInput = document.getElementById("question");
     const error = document.getElementById("error");
     const answer = document.getElementById("answer");
     const citations = document.getElementById("citations");
+    const answerHeading = document.getElementById("answer-heading");
+    const citationsHeading = document.getElementById("citations-heading");
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
+    async function ask() {
+      const question = qInput.value.trim();
+      if (!question) return;
 
       error.textContent = "";
       answer.textContent = "Thinking...";
       citations.textContent = "";
+      answerHeading.hidden = false;
+      citationsHeading.hidden = true;
+      btn.disabled = true;
 
       try {
         const response = await fetch("/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: question.value }),
+          body: JSON.stringify({ question }),
         });
 
-        if (!response.ok) {
-          throw new Error("Request failed: " + response.status);
-        }
-
         const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || "Request failed: " + response.status);
+        }
 
         answer.textContent = data.answer;
 
         if (data.citations && data.citations.length > 0) {
-          citations.innerHTML = "<strong>Citations:</strong>";
+          citationsHeading.hidden = false;
+          citations.innerHTML = "";
           for (const citation of data.citations) {
             const div = document.createElement("div");
             div.textContent =
               citation.source + " — " + citation.section + " (score: " + citation.score + ")";
             citations.appendChild(div);
           }
+        } else {
+          citationsHeading.hidden = true;
         }
       } catch (err) {
         error.textContent = err.message;
         answer.textContent = "";
+        answerHeading.hidden = true;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    btn.addEventListener("click", ask);
+
+    qInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        ask();
       }
     });
   </script>

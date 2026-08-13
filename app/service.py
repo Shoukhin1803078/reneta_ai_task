@@ -1,3 +1,4 @@
+import math
 import os
 
 from langchain_chroma import Chroma
@@ -8,6 +9,9 @@ from .ingest import load_embeddings
 
 
 NOT_IN_DOCS_PHRASE = "I don't have that information in the provided documents"
+
+# Minimum reranker confidence score
+MIN_CONFIDENCE_THRESHOLD = 0.5
 
 
 def load_vectorstore(persist_directory="./chroma_db", collection_name="medicine_leaflets"):
@@ -51,22 +55,17 @@ def build_llm():
     return llm
 
 
-def generate_answer(llm, query, context):
-    # First: does the context actually answer the question?
-    verdict_prompt = f"""
-    Does the context below answer the question? Answer with YES or NO only.
+def generate_answer(llm, query, context, reranked_results=None):
+    # Honesty gate: refuse when the top retrieved chunk is not confidently
+    # relevant. This is more reliable for a small local model than asking the
+    # LLM to judge "does the context answer it" — the 3b model tends to
+    # over-think and refuse even when the right chunk was retrieved.
+    if reranked_results:
+        top_document, top_score = reranked_results[0]
+        top_confidence = 1 / (1 + math.exp(-top_score))
 
-    Context:
-    {context}
-
-    Question:
-    {query}
-    """
-
-    verdict = llm.invoke(verdict_prompt).content.strip().upper()
-
-    if "NO" in verdict:
-        return NOT_IN_DOCS_PHRASE
+        if top_confidence < MIN_CONFIDENCE_THRESHOLD:
+            return NOT_IN_DOCS_PHRASE
 
     prompt = f"""
     Answer the question using only the provided context.

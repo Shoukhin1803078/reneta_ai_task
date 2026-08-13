@@ -64,7 +64,12 @@ def build_context(state: RAGState):
 
 
 def generate(state: RAGState):
-    answer = generate_answer(state["llm"], state["question"], state["context"])
+    answer = generate_answer(
+        state["llm"],
+        state["question"],
+        state["context"],
+        state["final_reranked_results"],
+    )
 
     return {"answer": answer}
 
