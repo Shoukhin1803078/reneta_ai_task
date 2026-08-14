@@ -2,7 +2,7 @@
 
 # Explanation Video link:
 - **Video 1 - Project Setup, Run and Testing Sample Query:** https://www.loom.com/share/2f89d65d079b4b6693f2595ec95fa6db
-- **Video 2 - Explain Architecture, Design flow and Optimization Part :** https://www.loom.com/share/aa96c4fa168c4a9794d9b7e0fde45927
+- **Video 2 - Explain Architecture, Solution Design Flow and Optimization Part :** https://www.loom.com/share/aa96c4fa168c4a9794d9b7e0fde45927
 
 # Renata Medicine Leaflet Assistant
 
